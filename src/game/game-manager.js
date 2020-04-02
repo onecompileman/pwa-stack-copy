@@ -53,9 +53,31 @@ export class GameManager {
     this.screenManager.show('homeScreen');
   }
 
+  resetGame() {
+    this.scene.remove(this.currentBox);
+    this.fallingBoxes.forEach(box => {
+      this.world.remove(box.body);
+      this.scene.remove(box);
+    });
+
+    this.boxes.forEach(box => {
+      this.world.remove(box.body);
+      this.scene.remove(box);
+    });
+    this.clock = new Clock();
+    this.isPlaying = false;
+    this.score = 0;
+
+    this.initColors();
+    this.initFog();
+    this.initBox();
+    this.initCamera();
+  }
+
   screenManagerBindEvents() {
     this.screenManager.screens.homeScreen.onTap = () => {
       this.screenManager.show('inGameUI');
+      this.resetGame();
       this.isPlaying = true;
     };
 
@@ -71,13 +93,13 @@ export class GameManager {
 
     this.screenManager.screens.gameOver.onRetry = () => {
       this.screenManager.show('inGameUI');
-      this.initGame();
+      this.resetGame();
       this.isPlaying = true;
     };
 
     this.screenManager.screens.gameOver.onResume = () => {
       this.screenManager.show('homeScreen');
-      this.initGame();
+      this.resetGame();
     };
   }
 
@@ -92,26 +114,26 @@ export class GameManager {
 
   initColors() {
     this.backgroundColor = new Color(
-      MathUtils.randFloat(0.6, 0.85),
-      MathUtils.randFloat(0.6, 0.8),
-      MathUtils.randFloat(0.6, 0.85)
+      MathUtils.randFloat(0.1, 0.65),
+      MathUtils.randFloat(0.15, 0.65),
+      MathUtils.randFloat(0.1, 0.65)
     );
 
     this.toLerpBackgroundColor = new Color(
-      MathUtils.randFloat(0.6, 0.85),
-      MathUtils.randFloat(0.6, 0.8),
-      MathUtils.randFloat(0.6, 0.85)
+      MathUtils.randFloat(0.1, 0.65),
+      MathUtils.randFloat(0.15, 0.65),
+      MathUtils.randFloat(0.1, 0.65)
     );
 
     this.tileColor = new Color(
-      MathUtils.randFloat(0.1, 0.5),
-      MathUtils.randFloat(0, 0.5),
-      MathUtils.randFloat(0.1, 0.5)
+      MathUtils.randFloat(0.5, 0.85),
+      MathUtils.randFloat(0.5, 0.8),
+      MathUtils.randFloat(0.5, 0.85)
     );
     this.toLerpTileColor = new Color(
-      MathUtils.randFloat(0.1, 0.5),
-      MathUtils.randFloat(0, 0.5),
-      MathUtils.randFloat(0.1, 0.5)
+      MathUtils.randFloat(0.5, 0.85),
+      MathUtils.randFloat(0.5, 0.8),
+      MathUtils.randFloat(0.5, 0.85)
     );
 
     this.tileLerpStep = 0;
@@ -121,14 +143,14 @@ export class GameManager {
   updateColors() {
     if (this.tileMaxLerpStep <= this.tileLerpStep) {
       this.toLerpTileColor = new Color(
-        MathUtils.randFloat(0.1, 0.5),
-        MathUtils.randFloat(0, 0.5),
-        MathUtils.randFloat(0.1, 0.5)
+        MathUtils.randFloat(0.3, 0.85),
+        MathUtils.randFloat(0.5, 0.8),
+        MathUtils.randFloat(0.3, 0.85)
       );
       this.toLerpBackgroundColor = new Color(
-        MathUtils.randFloat(0.6, 0.85),
-        MathUtils.randFloat(0.6, 0.8),
-        MathUtils.randFloat(0.6, 0.85)
+        MathUtils.randFloat(0.1, 0.65),
+        MathUtils.randFloat(0.15, 0.65),
+        MathUtils.randFloat(0.1, 0.65)
       );
 
       this.tileLerpStep = 0;
@@ -147,7 +169,7 @@ export class GameManager {
   initCamera() {
     this.canvas = document.querySelector('#mainCanvas');
 
-    this.cameraFollowPosition = new Vector3(7.7, 18, 1);
+    this.cameraFollowPosition = new Vector3(7.7, 19, 1.4);
 
     this.camera = new PerspectiveCamera(
       50,
@@ -158,7 +180,7 @@ export class GameManager {
 
     this.camera.rotation.set(-0.75, 0.5, 0.5);
 
-    this.camera.position.set(7.7, 18, 1);
+    this.camera.position.set(7.7, 19, 1.4);
 
     this.scene.add(this.camera);
   }
@@ -235,7 +257,7 @@ export class GameManager {
       this.currentBoxDepth
     );
     const currentBoxMaterial = new MeshLambertMaterial({
-      color: this.tileColor
+      color: this.tileColor.clone()
     });
 
     this.currentBox = new Mesh(currentBoxGeometry, currentBoxMaterial);
@@ -286,7 +308,7 @@ export class GameManager {
 
   onTap() {
     this.cameraFollowPosition.copy(this.camera.position);
-    this.cameraFollowPosition.y += this.boxHeight;
+    this.cameraFollowPosition.y += this.boxHeight * 0.85;
 
     let lastBox = this.boxes[this.boxes.length - 1];
 
@@ -306,10 +328,16 @@ export class GameManager {
 
       const placeThreshold = 0.1;
 
+      console.log(boxToAdd);
+
       const maxDiff = lastBoxMaxX - currentBoxMaxX;
+
+      console.log(maxDiff, lastBoxMaxX, currentBoxMaxX);
 
       if (Math.abs(maxDiff) > placeThreshold) {
         this.currentBoxWidth -= Math.abs(maxDiff);
+
+        console.log(this.currentBoxWidth, 'dito');
 
         if (this.currentBoxWidth <= 0) {
           setTimeout(() => {
@@ -390,6 +418,8 @@ export class GameManager {
 
       if (Math.abs(maxDiff) > placeThreshold) {
         this.currentBoxDepth -= Math.abs(maxDiff);
+
+        console.log(this.currentBoxDepth, 'dito');
 
         if (this.currentBoxDepth <= 0) {
           setTimeout(() => {
@@ -473,8 +503,10 @@ export class GameManager {
       this.currentBoxDepth
     );
     const currentBoxMaterial = new MeshLambertMaterial({
-      color: this.tileColor
+      color: this.toLerpTileColor.clone()
     });
+
+    console.log(this.tileColor);
 
     this.movementDir =
       this.movementDir === 'horizontal' ? 'vertical' : 'horizontal';
@@ -483,7 +515,7 @@ export class GameManager {
     this.currentBox.position.set(
       this.movementDir === 'horizontal' ? -5 : 0,
       lastBox.position.y + this.boxHeight,
-      this.movementDir === 'horizontal' ? -10 : -5
+      this.movementDir === 'horizontal' ? -10 : -15
     );
 
     if (this.movementDir === 'horizontal') {
