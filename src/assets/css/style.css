@@ -1,0 +1,42 @@
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  background-color: #dedede;
+}
+
+main {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+#mainCanvas {
+  height: 100%;
+  max-width: 450px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+pause-screen,
+game-over,
+home-screen {
+  position: absolute;
+  top: 0;
+  height: 100vh;
+  width: 100%;
+  max-width: 450px;
+  z-index: 999;
+  display: none;
+}
+
+in-game-ui {
+  display: none;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  max-width: 450px;
+  z-index: 999;
+}
